@@ -1,7 +1,7 @@
 <template> 
     <v-layout align-center justify-center> 
         <v-flex xs9>
-            <h2 style="margin-bottom:10px;">Profile de: {{this.$store.state.usuario._id.id}}</h2>
+            <h2 style="margin-bottom:10px;">Profile de: {{profile.nombre}}</h2> 
             <div v-if="categorias.length > 0">
                 <v-card
                 class="mx-auto"
@@ -9,22 +9,39 @@
                 style="margin-bottom:20px;"
                 v-for="(post, index) in categorias" :key="index"
                 > 
-                    <v-card-title class="headline font-weight-bold">
-                    {{post.content}}
-                    </v-card-title>
+<v-card-title>
+       <span class="headline"> 
+        {{post.postedByDetails.nombre}}
+      </span> 
+       <v-spacer></v-spacer> 
+     <v-row
+            align="center"
+            justify="end"  
+            v-if="post.postedBy == id_usuario"
+          > 
+                  <v-btn icon @click="eliminar_publicacion(post._id)"> 
+                  <v-icon class="mr-1" >mdi-delete</v-icon>  
+                </v-btn> 
+     </v-row>
+     </v-card-title>
+        
 
                     <v-card-subtitle>
                     {{post.createdAt | moment }}
                     </v-card-subtitle>
+                      <div style="margin:20px; font-weight:bold; font-size:30px;">
+        {{post.content}}
 
-                    <v-card-actions>
-                        <v-list-item class="grow"> 
+      </div>
+      <v-card-actions> 
+        <v-list-item class="grow"> 
+            <v-list-item-content>
+            <div id="chip-usage-example">
 
-                            <v-list-item-content>
-                                <v-list-item-title>Publicado por: {{post.postedBy}}</v-list-item-title>
-                            </v-list-item-content>
-
-                            <v-row
+              <v-chip style="margin:3px;" v-for="(tag, index) in post.tags" :key="index" :to="{name: 'tag', params: { tag: tag }}">{{tag}}</v-chip>
+            </div> 
+          </v-list-item-content>
+           <v-row
                             align="center"
                             justify="end"
                             > 
@@ -34,8 +51,10 @@
                                 </v-btn>
 
                             </v-row>
-                        </v-list-item>
-                    </v-card-actions>
+         </v-list-item>
+      </v-card-actions>
+
+                    
                 </v-card> 
             </div>
             <div v-else>
@@ -68,7 +87,9 @@ export default {
                 adAccion:0,
                 adNombre:'',
                 adId:'',
-                show:false
+                show:false,
+                profile: [],
+                id_usuario: ''
             }
         },
         computed: {
@@ -87,18 +108,26 @@ export default {
             }
         },
         created () {
-            this.listar()
+            this.id_usuario = this.$store.state.usuario._id.id;
+            this.listar();
+            this.getProfile();
         },
         methods: {
             listar(){
                 let me=this; 
                 axios.get('posts/'+this.$route.params.id).then(function (response){
-                  console.log(response);
                     me.categorias=response.data;
                 }).catch(function(error){
                     console.log(error);
-                });
-
+                }); 
+            },
+            getProfile(){
+                let me=this; 
+                axios.get('user/'+this.$route.params.id).then(function (response){
+                    me.profile=response.data;
+                }).catch(function(error){
+                    console.log(error);
+                }); 
             }
         },
         filters: {

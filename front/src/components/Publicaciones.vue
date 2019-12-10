@@ -9,10 +9,14 @@
                         name="input-7-1"
                         v-model="publicacion_content"
                         filled
-                        label="Publicacion" 
+                        label="Publicacion"
+                         :rules="['Required']" 
                         >
                       </v-textarea>
  
+                       
+                      <v-layout row no-gutters>
+                    <v-flex md7>
                       <v-combobox multiple
                                 v-model="Publicacion_Tags" 
                                 label="Tags" 
@@ -20,11 +24,25 @@
                                 chips
                                 deletable-chips
                                 class="tag-input"
+                                :rules="['Required']" 
                                 :search-input.sync="search">
                       </v-combobox> 
-                      <v-btn @click="agregar_publicacion()" small color="primary">
+                    </v-flex>
+                     <v-flex md3>
+                       <v-switch
+
+                        v-model="isPublic"
+                        :label="`Publico`"
+                      ></v-switch>
+                    </v-flex>
+                    <v-flex md2>
+                       <v-btn @click="agregar_publicacion()" small color="primary">
                             Agregar
                         </v-btn> 
+                    </v-flex>
+                      </v-layout>
+                       
+                       
                     </v-flex>
                     <v-flex md12>
                          
@@ -36,10 +54,22 @@
       style="margin-bottom:20px;"
       v-for="(post, index) in categorias" :key="index"
     > 
-  
-      <v-card-title class="headline">
+     <v-card-title>
+       <span class="headline"> 
         {{post.postedByDetails.nombre}}
-      </v-card-title> 
+      </span> 
+       <v-spacer></v-spacer> 
+     <v-row
+            align="center"
+            justify="end"  
+            v-if="post.postedBy == id_usuario"
+          > 
+                  <v-btn icon @click="eliminar_publicacion(post._id)"> 
+                  <v-icon class="mr-1" >mdi-delete</v-icon>  
+                </v-btn> 
+     </v-row>
+     </v-card-title>
+        
       <v-card-subtitle>
       {{post.createdAt | moment }}
       </v-card-subtitle>
@@ -75,6 +105,7 @@
 <script>
 import axios from 'axios'
 import moment from 'moment' 
+import {bus} from '../main' 
 export default { 
         data(){
             return{
@@ -98,13 +129,17 @@ export default {
                 adId:'',
                 show:false,
                 publicacion_content:'',
-                Publicacion_Tags: []
+                Publicacion_Tags: [],
+                dialog: false,
+                id_usuario: '',
+                isPublic: true
             }
         },
         computed: {
             formTitle () {
             return this.editedIndex === -1 ? 'Nuevo registro' : 'Editar registro'
-            }
+            },
+            
         },
         watch: {
             dialog (val) {
@@ -112,6 +147,7 @@ export default {
             }
         },
         created () {
+          this.id_usuario = this.$store.state.usuario._id.id
             this.listar()
         },
         methods: {
@@ -123,8 +159,8 @@ export default {
                     console.log(error);
                 });
             },
-            agregar_publicacion(){
-              axios.post('post',{content: this.publicacion_content,public: true, postedByDetails: {nombre: this.$store.state.usuario.nombre },postedBy: this.$store.state.usuario._id.id, tags: this.Publicacion_Tags})
+            agregar_publicacion(){ 
+              axios.post('post',{content: this.publicacion_content,public:this.isPublic, postedByDetails: {nombre: this.$store.state.usuario.nombre },postedBy: this.$store.state.usuario._id.id, tags: this.Publicacion_Tags})
               .then(respuesta =>{  
                 this.$router.push({name: 'publicacion', params: { id: respuesta.data._id }}); 
               }) 
@@ -136,6 +172,16 @@ export default {
                   } else{
                       this.errorM='Ocurrió un error con el servidor.';
                   }  
+              }); 
+            },
+            eliminar_publicacion(id_publicacion){
+              axios.delete('post/'+id_publicacion)
+              .then(respuesta =>{  
+                this.listar();
+              }) 
+              .catch(error =>{
+                  console.log(error);  
+                  
               }); 
             }
         },

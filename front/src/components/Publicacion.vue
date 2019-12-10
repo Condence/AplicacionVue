@@ -4,10 +4,23 @@
      <v-card
       class="mx-auto"
     >  
-      <v-card-title>
+    
+    <v-card-title>
+       <span class="headline"> 
         {{this.respuesta.postedByDetails.nombre}}
-      </v-card-title>
-  
+      </span> 
+       <v-spacer></v-spacer> 
+     <v-row
+            align="center"
+            justify="end"  
+            v-if="this.respuesta.postedBy == id_usuario"
+          > 
+                  <v-btn icon @click="eliminar_publicacion(respuesta._id)"> 
+                  <v-icon class="mr-1" >mdi-delete</v-icon>  
+                </v-btn> 
+     </v-row>
+     </v-card-title>
+
       <v-card-subtitle>
          {{this.respuesta.createdAt | moment }}
       </v-card-subtitle>
@@ -93,7 +106,8 @@ export default {
           postBy: '',
           adNombre:'',
           adId:'',
-          comentario_content: ''
+          comentario_content: '',
+          id_usuario: ''
       }
   },
   computed: {
@@ -102,18 +116,23 @@ export default {
       }
   },
   watch: {
-      dialog (val) {
-      val || this.close()
+      '$route.params': {
+          handler(newValue) {
+              const { userName } = newValue
+
+              this.listar()
+          }
       }
   },
   created () {
+    this.id_usuario = this.$store.state.usuario._id.id;
       this.listar()
   },
   methods: {
       listar(){ 
         axios.get('post/'+this.$route.params.id)
         .then(response =>{   
-            this.respuesta=  response.data;
+            this.respuesta= response.data;
         }) 
         .catch(error =>{
             console.log(error);  
@@ -122,8 +141,9 @@ export default {
       },
       agregar_comentario(){
         axios.post('comment/'+this.$route.params.id,{comentario: this.comentario_content,postedByName:  this.$store.state.usuario.nombre ,postedBy: this.$store.state.usuario._id.id})
-        .then(respuesta =>{  
-          this.$router.push({name: 'publicacion', params: { id: respuesta.data._id }}); 
+        .then(respuesta =>{   
+          this.comentario_content = '';
+          this.listar(); 
         }) 
         .catch(error =>{
             console.log(error);  
@@ -133,6 +153,16 @@ export default {
             } else{
                 this.errorM='Ocurrió un error con el servidor.';
             }  
+        }); 
+      },
+      eliminar_publicacion(id_publicacion){
+        axios.delete('post/'+id_publicacion)
+        .then(respuesta =>{  
+          this.$router.push({name: 'home'}); 
+        }) 
+        .catch(error =>{
+            console.log(error);  
+            
         }); 
       }
   },

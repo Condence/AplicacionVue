@@ -20,7 +20,7 @@
       Inicio
       </v-btn> 
       <v-btn @click="()=>profile(this.$store.state.usuario._id.id)" text v-if="logueado">
-      Profile
+      Perfil
       </v-btn>  
       <v-btn text @click="salir()" v-if="logueado">
         <v-icon>logout</v-icon> Salir
@@ -40,18 +40,12 @@
     <v-content>
    
       <v-container grid-list-md text-xs-center>
-    <v-layout row wrap>
-
-   
+    <v-layout row wrap align-center justify-center> 
+   <!--
       <v-flex xs3 class="sidebar" v-if="logueado">   
-        <ul><span>Entradas</span>
-         <li>
-            <v-btn to="/" text>
-              Entradas
-            </v-btn> 
-         </li>
-         <Amigos></Amigos>
-       </ul>
+    
+          
+ <Amigos></Amigos>  
         
        <ul v-if="esAdministrador">
          <span>Empleados</span>
@@ -72,16 +66,19 @@
          </li>
        </ul>
       </v-flex>
-      <v-flex xs9 class="main" v-if="logueado"> 
+         -->
+      <v-flex xs8 class="main" v-if="logueado"> 
         <v-slide-y-transition mode="out-in">
           <router-view/>
         </v-slide-y-transition>
       </v-flex>
+      
       <v-flex xs12 class="main" v-else> 
         <v-slide-y-transition mode="out-in">
           <router-view/>
         </v-slide-y-transition>
       </v-flex>
+      
     </v-layout>
   </v-container>
     </v-content>
